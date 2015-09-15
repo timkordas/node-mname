@@ -47,5 +47,5 @@ server.on('clientError', function(error) {
 });
 
 server.on('uncaughtException', function(error) {
-        console.log("there was an excepton: %s", error.message());
+        console.log("there was an excepton: %s", error.message);
 });
