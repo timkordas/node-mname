@@ -5,8 +5,8 @@ var log = bunyan.createLogger({name: 'test'});
 var server = named.createServer();
 var ttl = 3600;
 
-server.listen(9953, '127.0.0.1');
-server.listenTcp(9953, '127.0.0.1');
+server.listenUdp({port: 9953, address: '127.0.0.1'});
+server.listenTcp({port: 9953, address: '127.0.0.1'});
 
 server.on('query', function(query) {
 	var domain = query.name();
