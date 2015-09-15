@@ -15,6 +15,7 @@
     "node": ">=0.6"
   },
   "dependencies": {
+    "assert-plus": "^0.1.5",
     "bunyan": "0.7.0",
     "ipaddr.js": "0.1.1"
   },
