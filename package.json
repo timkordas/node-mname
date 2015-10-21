@@ -4,7 +4,9 @@
   "version": "0.0.1",
   "author": "trevoro <trevoro@gmail.com>",
   "contributors": [
-    "Mark Cavage"
+    "Mark Cavage",
+    "Alex Wilson",
+    "Lorenz Brun"
   ],
   "repository": {
     "type": "git",
@@ -16,8 +18,8 @@
   },
   "dependencies": {
     "assert-plus": "^0.1.5",
-    "bunyan": "0.7.0",
-    "ipaddr.js": "0.1.1"
+    "bunyan": "^1.5.1",
+    "ipaddr.js": "^1.0.0"
   },
   "devDependencies": {
     "nodeunit": "0.9.0"
