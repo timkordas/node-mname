@@ -22,7 +22,7 @@
     "ipaddr.js": "^1.0.0"
   },
   "devDependencies": {
-    "nodeunit": "0.9.0"
+    "nodeunit": "0.9.1"
   },
   "license": "MIT"
 }

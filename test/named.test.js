@@ -175,7 +175,7 @@ test('answer query: example.com (SOA)', function (t) {
                         name: 'example.com.',
                         ttl: 5,
                         type: 'SOA',
-                        target: 'example.com. hostmaster.example.com. 0 10 10 10 10'
+                        target: 'example.com. hostmaster.example.com. 0 86400 7200 1209600 10800'
                 }]);
                 t.end();
         });

@@ -23,7 +23,7 @@ var samples = [
         {
                 id: 0,
                 description: 'query ns1.joyent.dev (A)',
-                data: "0f 34 01 00 00 01 00 00 00 00 00 00 03 6e 73 31 06 6a 6f 79 65 " +
+                data: "0f 34 81 00 00 01 00 00 00 00 00 00 03 6e 73 31 06 6a 6f 79 65 " +
                         "6e 74 03 64 65 76 00 00 01 00 01",
                 type: 'queryMessage'
         },

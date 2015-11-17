@@ -9,19 +9,14 @@ var test = helper.test;
 var before = helper.before;
 var after = helper.after;
 
-var raw, src;
+var qopts = {};
 
 before(function(callback) {
         try {
-                raw = {
-                        buf: dnsBuffer.samples[0].raw,
-                        len: dnsBuffer.samples[0].length
-                }
-                src = {
-                        family: 'udp6',
-                        address: '127.0.0.1',
-                        port: 23456
-                }
+                qopts.data = dnsBuffer.samples[0].raw,
+                qopts.family = 'udp';
+                qopts.address = '127.0.0.1';
+                qopts.port = 23456;
 
                 process.nextTick(callback);
         }
@@ -33,22 +28,16 @@ before(function(callback) {
 
 
 test('decode a query datagram', function(t) {
-        var query = named.Query.parse(raw, src);
-        t.end();
-});
-
-test('create a new query object', function(t) {
-        var decoded = named.Query.parse(raw, src);
-        var query = named.Query.createQuery(decoded);
+        var query = named.Query.parse(qopts);
         t.end();
 });
 
 test('encode an null-response query object', function(t) {
-        var decoded = named.Query.parse(raw, src);
-        var query = named.Query.createQuery(decoded);
-        query.encode();
+        var query = named.Query.parse(qopts);
+        query.setError('enoerr');
+        var buf = query.encode();
         var ok = dnsBuffer.samples[0].raw;
-        t.deepEqual(query._raw.buf, ok);
+        t.deepEqual(buf, ok);
         t.end();
 });
 
