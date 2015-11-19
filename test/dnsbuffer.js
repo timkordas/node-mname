@@ -1,25 +1,23 @@
 /*
-
-  This file contains a bunch of sample DNS queries generated against namedjs
-  using the 'dig' utility, as its the only tool that supports alternative ports
-  when doing a query.
-
-  When this module is loaded it will return an object containing an array of
-  samples that you can use to test serializers, protocol generators, create a
-  raw DNS client, etc.
-
-  Each sample is an object with an 'id', 'description', 'raw',  and 'data'.
-  The ID is used so that adding and removing samples out of order will not affect
-  external  references to them in tests.
-
-  The data is put through an encoder that will turn this string into a raw
-  buffer. That way, samples may be loaded from file that can be read by a (mortal)
-  human being.
-
-  When the sample is encoded it places a "raw" value in the object. If you have one
-  there it will be over-written.
-
-*/
+ * This file contains a bunch of sample DNS queries generated against named
+ * using the 'dig' utility, as its the only tool that supports alternative ports
+ * when doing a query.
+ *
+ * When this module is loaded it will return an object containing an array of
+ * samples that you can use to test serializers, protocol generators, create a
+ * raw DNS client, etc.
+ *
+ * Each sample is an object with an 'id', 'description', 'raw',  and 'data'.
+ * The ID is used so that adding and removing samples out of order will not
+ * affect external  references to them in tests.
+ *
+ * The data is put through an encoder that will turn this string into a raw
+ * buffer. That way, samples may be loaded from file that can be read by a
+ * (mortal) human being.
+ *
+ * When the sample is encoded it places a "raw" value in the object. If you
+ * have one there it will be over-written.
+ */
 
 var samples = [
         {
@@ -47,18 +45,17 @@ function encode(data) {
         tokens = data.split(/\s/);
         buffer = new Buffer(tokens.length);
 
-        for (i in tokens) {
-                var t = '0x' + tokens[i];
-                var v = parseInt(t);
+        for (var i = 0; i < tokens.length; ++i) {
+                var v = parseInt(tokens[i], 16);
                 buffer.writeInt8(v, pos++, true);
         }
         return buffer;
 }
 
-function encodeSamples(samples) {
+function encodeSamples(samps) {
         var sample, results = [];
-        for (i in samples) {
-                sample = samples[i];
+        for (var i = 0; i < samps.length; ++i) {
+                sample = samps[i];
                 sample.raw = encode(sample.data);
                 results.push(sample);
         }
@@ -84,4 +81,4 @@ function equalBuffers(b1, b2) {
 module.exports = {
         samples: encodeSamples(samples),
         equalBuffers: equalBuffers
-}
+};

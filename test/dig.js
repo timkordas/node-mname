@@ -24,7 +24,7 @@ function parseAnswer(tokens) {
                 ttl:    parseInt(t[1], 10),
                 type:   t[3],
                 target: t[4]
-        }
+        };
 
         return (r);
 }
@@ -90,7 +90,7 @@ function dig(name, type, options, callback) {
 
         type = type.toUpperCase();
 
-        var opts = ''
+        var opts = '';
         if (options.server)
                 opts += ' @' + options.server;
         if (options.port)

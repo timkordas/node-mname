@@ -45,6 +45,6 @@ module.exports = {
                         stream: stream || process.stdout,
                         src: true
                 }));
-        },
+        }
 
 };

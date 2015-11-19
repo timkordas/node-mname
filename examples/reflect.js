@@ -45,7 +45,3 @@ server.on('query', function(query) {
 server.on('clientError', function(error) {
         console.log("there was a clientError: %s", error);
 });
-
-server.on('uncaughtException', function(error) {
-        console.log("there was an excepton: %s", error.message);
-});
