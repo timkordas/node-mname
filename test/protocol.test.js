@@ -32,7 +32,7 @@ var dnsBuffer = require('./dnsbuffer');
 var test = helper.test;
 var protocol = named.Protocol;
 
-for (var i in dnsBuffer.samples) {
+Object.keys(dnsBuffer.samples).forEach(function (i) {
         var sample = dnsBuffer.samples[i];
         test('protocol decode/encode: ' + sample.description, function(t) {
                 decoded = protocol.decode(sample.raw, sample.type);
@@ -41,8 +41,11 @@ for (var i in dnsBuffer.samples) {
                         t.ok(true, 'encoder cycle passed');
                 }
                 else {
+                        console.log(decoded);
+                        console.log(encoded.toString('base64'));
+                        console.log(sample.raw.toString('base64'));
                         t.ok(false, 'encoder cycle failed');
                 }
                 t.end();
         });
-};
+});
