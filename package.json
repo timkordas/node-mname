@@ -1,7 +1,7 @@
 {
   "name": "named",
   "description": "DNS server library for node.js",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "author": "trevoro <trevoro@gmail.com>",
   "contributors": [
     "Mark Cavage",
