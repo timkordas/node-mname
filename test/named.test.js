@@ -46,7 +46,7 @@ before(function (callback) {
                 log: helper.getLog('server')
         });
 
-        this.server.on('query', function (query) {
+        this.server.on('query', function (query, cb) {
                 var domain = query.name()
                 var type = query.type();
 
@@ -85,6 +85,7 @@ before(function (callback) {
                         break;
                 }
                 query.respond();
+                cb();
         });
 
         this.server.listen(options.port, options.server, function() {
