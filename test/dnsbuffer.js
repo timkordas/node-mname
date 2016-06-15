@@ -46,7 +46,31 @@ var samples = [
                 description: 'query ns1.joyent.dev (A)',
                 data: "0f 34 81 00 00 01 00 00 00 00 00 00 03 6e 73 31 06 6a 6f 79 65 " +
                         "6e 74 03 64 65 76 00 00 01 00 01",
-                type: 'message'
+                type: 'message',
+                decoded: {
+                        header: {
+                                id: 3892,
+                                flags: {
+                                        qr: true, opcode: 0, aa: false,
+                                        tc: false, rd: true, ra: false,
+                                        z: false, ad: false, cd: false,
+                                        rcode: 0
+                                },
+                                qdCount: 1,
+                                anCount: 0,
+                                nsCount: 0,
+                                arCount: 0
+                        },
+                        question: [
+                                {
+                                        name: 'ns1.joyent.dev',
+                                        type: 1, qclass: 1
+                                }
+                        ],
+                        answer: [],
+                        authority: [],
+                        additional: []
+                }
         },
         {
                 id: 1,
@@ -117,6 +141,64 @@ var samples = [
                         '00 00 e5 6a c0 6a 00 01 00 01 00 00 1c 20 00 04 ' +
                         '73 92 4c 41 c0 6a 00 1c 00 01 00 00 1c 20 00 10 ' +
                         '24 02 74 00 50 08 00 01 00 00 00 00 00 00 00 04',
+                type: 'message'
+        },
+        {
+                id: 5,
+                description: 'srv response with additional',
+                data:   'cb b4 81 00 00 01 00 04 00 00 00 01 05 5f 6c 64 ' +
+                        '61 70 04 5f 74 63 70 04 75 66 64 73 04 63 6f 61 ' +
+                        '6c 06 6a 6f 79 65 6e 74 02 75 73 00 00 21 00 01 ' +
+                        'c0 0c 00 21 00 01 00 00 00 05 00 2d 00 00 00 0a ' +
+                        '05 6e 24 32 36 65 38 31 32 34 31 2d 32 31 66 64 ' +
+                        '2d 34 39 66 62 2d 61 64 35 33 2d 38 33 61 31 38 ' +
+                        '35 66 32 61 39 62 38 c0 17 c0 0c 00 21 00 01 00 ' +
+                        '00 00 05 00 08 00 00 00 0a 05 6f c0 42 c0 0c 00 ' +
+                        '21 00 01 00 00 00 05 00 08 00 00 00 0a 05 70 c0 ' +
+                        '42 c0 0c 00 21 00 01 00 00 00 05 00 08 00 00 00 ' +
+                        '0a 05 71 c0 42 c0 42 00 01 00 01 00 00 00 05 00 ' +
+                        '04 0a 63 63 12',
+                type: 'message'
+        },
+        {
+                id: 6,
+                description: 'response with additional count but no ' +
+                    'additionals (a la binder bug)',
+                data:   '3b b9 81 00 00 01 00 01 00 00 00 01 04 75 66 64 ' +
+                        '73 04 63 6f 61 6c 06 6a 6f 79 65 6e 74 02 75 73 ' +
+                        '00 00 01 00 01 c0 0c 00 01 00 01 00 00 00 05 00 ' +
+                        '04 0a 63 63 12',
+                encode: false,
+                decoded: {
+                        header: {
+                                id: 15289,
+                                flags: {
+                                        qr: true, opcode: 0, aa: false,
+                                        tc: false, rd: true, ra: false,
+                                        z: false, ad: false, cd: false,
+                                        rcode: 0
+                                },
+                                qdCount: 1,
+                                anCount: 1,
+                                nsCount: 0,
+                                arCount: 1
+                        },
+                        question: [
+                                {
+                                        name: 'ufds.coal.joyent.us',
+                                        type: 1, qclass: 1
+                                }
+                        ],
+                        answer: [
+                                {
+                                        name: 'ufds.coal.joyent.us',
+                                        rtype: 1, rclass: 1, rttl: 5,
+                                        rdata: { target: '10.99.99.18' }
+                                }
+                        ],
+                        authority: [],
+                        additional: []
+                },
                 type: 'message'
         }
 ];

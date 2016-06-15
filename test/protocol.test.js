@@ -36,6 +36,13 @@ Object.keys(dnsBuffer.samples).forEach(function (i) {
         var sample = dnsBuffer.samples[i];
         test('protocol decode/encode: ' + sample.description, function(t) {
                 decoded = protocol.decode(sample.raw, sample.type);
+                if (sample.decoded !== undefined) {
+                        t.deepEqual(decoded, sample.decoded);
+                }
+                if (sample.encode === false) {
+                        t.end();
+                        return;
+                }
                 encoded = protocol.encode(decoded, sample.type);
                 if (dnsBuffer.equalBuffers(encoded, sample.raw)) {
                         t.ok(true, 'encoder cycle passed');
