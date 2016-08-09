@@ -44,6 +44,12 @@ JSSTYLE		?= $(JSSTYLE_EXEC)
 
 $(JSSTYLE_EXEC): | deps/jsstyle/.git
 
+JSON_EXEC	?= node_modules/.bin/json
+JSON		?= $(JSON_EXEC)
+
+$(JSON_EXEC): $(NPM_EXEC)
+	$(NPM) install json
+
 #
 # restdown
 #

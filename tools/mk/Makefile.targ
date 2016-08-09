@@ -178,7 +178,7 @@ check-bash: $(BASH_FILES:%=%.bashchk) $(BASH_FILES:%=%.bashstyle)
 	$(BASHSTYLE) $^
 
 .PHONY: check-json
-check-json: $(JSON_FILES:%=%.jsonchk)
+check-json: $(JSON_EXEC) $(JSON_FILES:%=%.jsonchk)
 
 %.jsonchk: %
 	$(JSON) --validate -f $^
