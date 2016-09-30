@@ -1,16 +1,17 @@
 {
-  "name": "named",
+  "name": "mname",
   "description": "DNS server library for node.js",
   "version": "1.0.8",
-  "author": "trevoro <trevoro@gmail.com>",
+  "author": "arekinath <alex@cooperi.net>",
   "contributors": [
     "Mark Cavage",
     "Alex Wilson",
-    "Lorenz Brun"
+    "Lorenz Brun",
+    "Trevor Orsztynowicz"
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/trevoro/node-named.git"
+    "url": "git://github.com/arekinath/node-mname.git"
   },
   "main": "lib/index.js",
   "engines": {
