@@ -1,42 +1,51 @@
-# node-named - DNS Server in Node.js
+# node-mname - DNS Server in Node.js
 
-Node-named is a lightweight DNS server written in pure javascript. It has
-limited support for the DNS spec, but aims to implement all of the *common*
-functionality that is in use today. 
+`mname` is a fork of the `node-named` library, which enables the development of
+DNS servers in node.js.
 
-
+This fork adds the following features:
+ - Queries over TCP connections
+ - AXFR, IXFR zone transfers
+ - PTR records
+ - Name compression
+ - EDNS 1.0
 
 ## Creating a DNS Server
 
-    var named = require('./lib/index');
-    var server = named.createServer();
-    var ttl = 300;
+```js
+var named = require('./lib/index');
+var server = named.createServer();
+var ttl = 300;
 
-    server.listen(9999, '127.0.0.1', function() {
-      console.log('DNS server started on port 9999');
-    });
+server.listenUdp(9999, '127.0.0.1', function() {
+  console.log('DNS server started on port 9999');
+});
 
-    server.on('query', function(query) {
-      var domain = query.name();
-      console.log('DNS Query: %s', domain)
-      var target = new SOARecord(domain, {serial: 12345});
-      query.addAnswer(domain, target, ttl);
-      server.send(query);
-    });
+server.on('query', function(query, done) {
+  var domain = query.name();
+  console.log('DNS Query: %s', domain)
+  var target = new SOARecord(domain, {serial: 12345});
+  query.addAnswer(domain, target, ttl);
+  query.respond();
+  done();
+});
+```
 
 ## Creating DNS Records
 
-node-named provides helper functions for creating DNS records. 
+node-named provides helper functions for creating DNS records.
 The records are available under 'named.record.NAME' where NAME is one
-of ['A', 'AAAA', 'CNAME', 'SOA', 'MX', 'TXT, 'SRV']. It is important to 
-remember that these DNS records are not permanently added to the server. 
-They only exist fo the length of the particular request. After that, they are
+of ['A', 'AAAA', 'CNAME', 'SOA', 'MX', 'TXT, 'SRV']. It is important to
+remember that these DNS records are not permanently added to the server.
+They only exist for the length of the particular request. After that, they are
 destroyed. This means you have to create your own lookup mechanism.
 
-    var named = require('node-named');
-    
-    var soaRecord = named.SOARecord('example.com', {serial: 201205150000});
-    console.log(soaRecord);
+```js
+var named = require('node-named');
+
+var soaRecord = named.SOARecord('example.com', {serial: 201205150000});
+console.log(soaRecord);
+```
 
 ### Supported Record Types
 
@@ -61,13 +70,6 @@ your path. Otherwise, you will end up with JSON formatted log output by default.
 You can pass in an alternate logger if you wish. If you do not, then it will use
 bunyan by default. Your logger must expose the functions 'info', 'debug',
 'warn', 'trace', 'error', and 'notice'.
-
-### TODO
-
- * Better record validation
- * Create DNS client for query recursor
- * Add support for PTR records
- * Add support for TCP AXFR requests
 
 ## Tell me even more...
 
