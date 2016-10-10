@@ -20,13 +20,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
- 
+
 // Quick and dirty 'dig' wrapper
 
 var assert = require('assert');
-var exec = require('child_process').exec;
+var spawn = require('child_process').spawn;
 var sprintf = require('util').format;
-
+var path = require('path');
 
 
 ///--- Globals
@@ -58,7 +58,10 @@ function parseDig(output) {
         var section = 'header';
 
         var results = {
+                id: null,
+                status: null,
                 question: null,
+                tsigFail: false,
                 answers: [],
                 additional: [],
                 authority: []
@@ -75,6 +78,8 @@ function parseDig(output) {
                         section = 'additional';
                 } else if (/^;; AUTHORITY SECTION:/.test(l)) {
                         section = 'authority';
+                } else if (/^; <<>> DiG.* axfr /i.test(l)) {
+                        section = 'answer';
                 }
 
                 if (section === 'question') {
@@ -91,6 +96,22 @@ function parseDig(output) {
                                 if (answer)
                                         results.answers.push(answer);
                         }
+                }
+
+                if (/^;; ->>HEADER<<-/.test(l)) {
+                        var m = l.match(/status: ([A-Z]+)/)
+                        results.status = m[1].toLowerCase();
+                        m = l.match(/id: ([0-9]+)/);
+                        results.id = parseInt(m[1], 10);
+                }
+
+                if (/Some TSIG could not be validated/.test(l) ||
+                    /tsig verify failure/.test(l)) {
+                        results.tsigFail = true;
+                }
+
+                if (/^; Transfer failed/.test(l)) {
+                        results.status = 'failed';
                 }
         });
 
@@ -113,19 +134,40 @@ function dig(name, type, options, callback) {
 
         type = type.toUpperCase();
 
-        var opts = '';
-        if (options.server)
-                opts += ' @' + options.server;
-        if (options.port)
-                opts += ' -p ' + options.port;
+        var opts = [];
+        if (options.server) {
+                opts.push('@' + options.server);
+        }
+        if (options.port) {
+                opts.push('-p');
+                opts.push(options.port);
+        }
+        if (options.key) {
+                opts.push('-y');
+                var key = options.key;
+                opts.push(key.algorithm + ':' + key.name + ':' +
+                    key.data.toString('base64'));
+        }
+        opts = opts.concat(['-t', type, name, '+time=1', '+retry=0']);
 
-        var cmd = sprintf('dig %s -t %s %s +time=1 +retry=0', opts, type, name);
-        exec(cmd, function (err, stdout, stderr) {
-                if (err)
-                        return (callback(err));
-
-
-                return (callback(null, parseDig(stdout)));
+        var kid = spawn('dig', opts, {
+                stdio: ['pipe', 'pipe', 'inherit'],
+        });
+        kid.stdin.end();
+        var stdout = [];
+        kid.stdout.on('readable', function () {
+                var b;
+                while ((b = kid.stdout.read()) !== null) {
+                        stdout.push(b);
+                }
+        });
+        kid.on('exit', function (exitStatus) {
+                if (exitStatus !== 0) {
+                        return (callback(
+                            new Error('dig exited with status ' + exitStatus)));
+                }
+                return (callback(null, parseDig(
+                    Buffer.concat(stdout).toString('ascii'))));
         });
 }
 
