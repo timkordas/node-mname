@@ -35,7 +35,7 @@ var protocol = named.Protocol;
 Object.keys(dnsBuffer.samples).forEach(function (i) {
         var sample = dnsBuffer.samples[i];
         test('protocol decode/encode: ' + sample.description, function(t) {
-                decoded = protocol.decode(sample.raw, sample.type);
+                var decoded = protocol.decode(sample.raw, sample.type);
                 if (sample.decoded !== undefined) {
                         t.deepEqual(decoded, sample.decoded);
                 }
@@ -55,4 +55,12 @@ Object.keys(dnsBuffer.samples).forEach(function (i) {
                 }
                 t.end();
         });
+});
+
+test('mname#12 regression test', function (t) {
+        var b = new Buffer('GET / HTTP/1.1\r\n\r\n');
+        t.throws(function () {
+                var decoded = protocol.decode(b, 'message');
+        });
+        t.end();
 });
