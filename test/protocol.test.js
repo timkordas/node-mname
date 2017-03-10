@@ -61,6 +61,26 @@ test('mname#12 regression test', function (t) {
         var b = new Buffer('GET / HTTP/1.1\r\n\r\n');
         t.throws(function () {
                 var decoded = protocol.decode(b, 'message');
-        });
+        }, /label length/i);
+        t.end();
+});
+
+test('mname#19 regression test (easy loop)', function (t) {
+        var b = new Buffer('3bb981000001000000000000' +
+                '047566647304636f616c066a6f79656e74027573c00c' +
+                '00010001', 'hex');
+        t.throws(function () {
+                var decoded = protocol.decode(b, 'message');
+        }, /label pointer/i);
+        t.end();
+});
+
+test('mname#19 regression test (harder loop)', function (t) {
+        var b = new Buffer('3bb981000001000000000005' +
+                '047566647304636f616c066a6f79656e74027573c00b' +
+                '00010001', 'hex');
+        t.throws(function () {
+                var decoded = protocol.decode(b, 'message');
+        }, /maximum length/i);
         t.end();
 });
