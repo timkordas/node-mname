@@ -4,11 +4,13 @@ generate a RSA key appropriate for SIG0 signatures:
 use something like this to issue SIG0 signed requests to the server
 (assumes that dnssec-keygen gave us a key named Ktjktest.+005+19115.private)
 
-nsupdate -k Ktjktest.+005+19115.private
+nsupdate -k Ktjktest.+005+19115.private << EOF
+debug
 server 127.0.0.1 9999
 update add www1.example.com 86400 a 10.1.1.1
 show
 send
+EOF
 
 get that in a more convenient form using:
 https://github.com/timkordas/tjk/blob/master/dnssec2pem.rb
