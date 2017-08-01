@@ -1,6 +1,13 @@
-named = require("./lib");
+var port = 9999;
+var host = '127.0.0.1';
+
+var named = require("./lib");
+var Query = require('./lib/query');
+var protocol = require('./lib/protocol');
+var mod_sig0 = require("./lib/sig0");
+
 var server = named.createServer();
-server.listen(9999, '127.0.0.1', function() {
+server.listen(port, host, function() {
   console.log('DNS server started on port 9999');
 });
 console.log(named.SoaRecord);
@@ -46,20 +53,136 @@ var KEYS = {
         "tjktest" : SIG0_KEY
 };
 server.on('query', function(query) {
-        console.log(query);
+        console.log("S: got query");
         if (query.isSigned()) {
-                console.log("signed\n");
+                console.log("signed");
+        } else {
+                console.log("NOT signed");
         }
         if (query.isSigned() && query.verify(KEYS)) {
-                console.log("verifies!\n");
+                console.log("verifies!");
+        } else {
+                console.log("failing verify!");
         }
         // return a dummy response.
         var domain = query.name();
         var record = new named.SOARecord(domain, {serial: 12345, ttl: 300});
         query.addAnswer(domain, record, 300);
-
-        // we're going to sign our response.
         query.sig0Key = SIG0_KEY;
 
+/*
+        // self verify ?
+        console.log("attempting self-verify");
+        wireResp = query.encode();
+//        console.log(wireResp);
+
+        var qopts = {
+                family: 'udp',
+                address: '1.23.4.5',
+                port: 89,
+                data: wireResp
+        };
+
+        var reply = Query.parse(qopts);
+        console.log("response: ", reply.query);
+        console.log("req: ", query.query);
+        console.log("trying to verify: ", mod_sig0.verifyResponse(reply.query, KEYS, query.query));
+*/
         server.send(query);
 });
+
+var dgram = require('dgram');
+var client = dgram.createSocket('udp4');
+
+function simpleDnsQuery(name, type, qclass) {
+        var req = {};
+        req.header = {};
+        req.header.id = 1234;
+        req.header.flags = {
+                qr:     false,
+                opcode: 0,
+                aa:     false,
+                tc:     false,
+                rd:     false,
+                ra:     false,
+                z:      false,
+                ad:     false,
+                cd:     false,
+                rcode:  0
+        };
+        req.header.qdCount = 1;
+        req.header.anCount = 0;
+        req.header.nsCount = 0;
+        req.header.arCount = 0;
+        req.question = [];
+        req.answer = [];
+        req.authority = [];
+        req.additional = [];
+
+        var question = {};
+        question.name = name;
+        question.type = protocol.queryTypes.A;
+        question.qclass = protocol.qClasses.ANY;
+        req.question.push(question);
+
+        return (req);
+}
+
+// Generate a signed request
+
+var r = simpleDnsQuery('example.com', protocol.queryTypes.A, protocol.qClasses.ANY);
+mod_sig0.signRequest(r, SIG0_KEY);
+var dnsReq = protocol.encode(r, 'message');
+
+var qopts = {
+        family: 'udp',
+        address: '1.2.3.4',
+        port: 88,
+        data: dnsReq
+};
+var parsed = Query.parse(qopts);
+console.log("directly signed ?", parsed.isSigned());
+console.log("directly verifies ?", parsed.verify(KEYS));
+
+client.on('message', function (message, remote) {
+        console.log("Got a message");
+
+        var qopts = {
+                family: 'udp',
+                address: remote.address,
+                port: remote.port,
+                data: message
+        };
+
+        var reply = Query.parse(qopts);
+        qopts.data = dnsReq;
+        qopts = {
+                family: 'udp',
+                address: '1.2.3.4',
+                port: 88,
+                data: dnsReq
+        };
+        var origReq = Query.parse(qopts);
+        console.log("reply qr: ", reply.testFlag('qr'));
+        if (reply.isSigned()) {
+                console.log("Signed Reply");
+                console.log("response: ", reply.query);
+                console.log("req: ", r);
+                // THIS WORKS with parsed.query; BUT NOT with origReq.query. WTF
+                console.log("reply before verify: ", reply);
+                console.log("parsed verify?", mod_sig0.verifyResponse(reply.query, KEYS, parsed.query));
+                console.log("parsed verify?", mod_sig0.verifyResponse(reply.query, KEYS, parsed.query));
+                console.log("origReq verify?", mod_sig0.verifyResponse(reply.query, KEYS, origReq.query));
+                console.log("query.js verify?", reply.verify(KEYS, parsed.query));
+        }
+});
+
+function sendMessage(c, m) {
+        c.send(m, 0, m.length, port, host,
+                    function(err, bytes) {
+                            if (err) throw err;
+                            console.log('C: sent message sent to ' + host +':'+ port);
+                    });
+}
+
+server.on('listening', function () { sendMessage(client, dnsReq)});
