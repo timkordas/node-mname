@@ -1,3 +1,17 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+/*
+ * Copyright (c) 2017, Joyent, Inc.
+ */
+
+/*
+ * manual testing for sig0
+ */
+
 var port = 9999;
 var host = '127.0.0.1';
 
@@ -70,24 +84,6 @@ server.on('query', function(query) {
         query.addAnswer(domain, record, 300);
         query.sig0Key = SIG0_KEY;
 
-/*
-        // self verify ?
-        console.log("attempting self-verify");
-        wireResp = query.encode();
-//        console.log(wireResp);
-
-        var qopts = {
-                family: 'udp',
-                address: '1.23.4.5',
-                port: 89,
-                data: wireResp
-        };
-
-        var reply = Query.parse(qopts);
-        console.log("response: ", reply.query);
-        console.log("req: ", query.query);
-        console.log("trying to verify: ", mod_sig0.verifyResponse(reply.query, KEYS, query.query));
-*/
         server.send(query);
 });
 
@@ -170,6 +166,7 @@ client.on('message', function (message, remote) {
                 console.log("req: ", r);
                 // THIS WORKS with parsed.query; BUT NOT with origReq.query. WTF
                 console.log("reply before verify: ", reply);
+                console.log("unparsed verify?", mod_sig0.verifyResponse(reply.query, KEYS, r));
                 console.log("parsed verify?", mod_sig0.verifyResponse(reply.query, KEYS, parsed.query));
                 console.log("parsed verify?", mod_sig0.verifyResponse(reply.query, KEYS, parsed.query));
                 console.log("origReq verify?", mod_sig0.verifyResponse(reply.query, KEYS, origReq.query));
