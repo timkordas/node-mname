@@ -249,8 +249,71 @@ test('accepts signed requests, emits signed response', function(t) {
                 };
 
                 var reply = Query.parse(qopts);
+                t.ok(reply.query.header.flags.rcode == protocol.rCodes.NOERROR,
+                     'expected success');
                 t.ok(reply.isSigned(), 'signed');
                 t.ok(reply.verify(CLIENT_KEYS, req));
+                t.end();
+                client.close();
+        });
+
+        var serializedReq = protocol.encode(req, 'message');
+        sendMessage(client, serializedReq);
+});
+
+test('rejects corrupt signed requests', function(t) {
+        var req = simpleDnsQuery('example.com', protocol.queryTypes.A, protocol.qClasses.ANY);
+        mod_sig0.signRequest(req, CLIENT_SIGNING_KEY);
+        var client = dgram.createSocket('udp6');
+        client.on('message', function (message, remote) {
+                var qopts = {
+                        family: 'udp',
+                        address: remote.address,
+                        port: remote.port,
+                        data: message
+                };
+
+                var reply = Query.parse(qopts);
+                t.ok(reply.query.header.flags.rcode == protocol.rCodes.NOTAUTH,
+                     'expected auth fail');
+                t.end();
+                client.close();
+        });
+
+        var serializedReq = protocol.encode(req, 'message');
+
+        // Corrupt out buffer
+        // modify a byte in the middle somewhere.
+        var offset = serializedReq.length / 2
+        var val = serializedReq.readUInt8(offset);
+        val = val ^ 1; // flip a bit
+        serializedReq.writeUInt8(val, offset);
+        sendMessage(client, serializedReq);
+});
+
+test('client rejects corrupt signed responses', function(t) {
+        var req = simpleDnsQuery('example.com', protocol.queryTypes.A, protocol.qClasses.ANY);
+        mod_sig0.signRequest(req, CLIENT_SIGNING_KEY);
+        var client = dgram.createSocket('udp6');
+        client.on('message', function (message, remote) {
+                // Corrupt our receive buffer
+                // modify a byte in the middle somewhere.
+                var offset = message.length / 2
+                var val = message.readUInt8(offset);
+                val = val ^ 1; // flip a bit
+                message.writeUInt8(val, offset);
+                var qopts = {
+                        family: 'udp',
+                        address: remote.address,
+                        port: remote.port,
+                        data: message
+                };
+
+                var reply = Query.parse(qopts);
+                t.ok(reply.query.header.flags.rcode == protocol.rCodes.NOERROR,
+                     'expected success');
+                t.ok(reply.isSigned(), 'signed');
+                t.ok(!reply.verify(CLIENT_KEYS, req));
                 t.end();
                 client.close();
         });
